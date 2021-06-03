@@ -23,6 +23,8 @@ import { t, styled, css } from '@superset-ui/core';
 import Collapse from 'src/components/Collapse';
 import TableElement from './TableElement';
 import TableSelector from '../../components/TableSelector';
+import Icons from 'src/components/Icons';
+import { IconTooltip } from '../../components/IconTooltip';
 
 const propTypes = {
   queryEditor: PropTypes.object.isRequired,
@@ -134,6 +136,21 @@ export default class SqlEditorLeftBar extends React.PureComponent {
     this.props.actions.addTable(this.props.queryEditor, tableName, schemaName);
   }
 
+  renderCollapseExpandIconWithTooltip = ({ isActive }) => (
+    <IconTooltip
+      style={{
+        transform: 'rotate(90deg)',
+      }}
+      aria-label="Collapse"
+      tooltip={t(`${isActive ? 'Collapse' : 'Expand'} table preview`)}
+    >
+      <Icons.RightOutlined
+        iconSize="s"
+        style={{ transform: isActive ? 'rotateY(180deg)' : '' }}
+      />
+    </IconTooltip>
+  );
+
   render() {
     const shouldShowReset = window.location.search === '?reset=1';
     const tableMetaDataHeight = this.props.height - 130; // 130 is the height of the selects above
@@ -184,6 +201,7 @@ export default class SqlEditorLeftBar extends React.PureComponent {
               expandIconPosition="right"
               ghost
               onChange={this.onToggleTable}
+              expandIcon={this.renderCollapseExpandIconWithTooltip}
             >
               {this.props.tables.map(table => (
                 <TableElement

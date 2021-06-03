@@ -17,7 +17,7 @@
  * under the License.
  */
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import Collapse from 'src/components/Collapse';
 import Card from 'src/components/Card';
 import ButtonGroup from 'src/components/ButtonGroup';
@@ -25,23 +25,52 @@ import { t, styled } from '@superset-ui/core';
 import { debounce } from 'lodash';
 
 import { Tooltip } from 'src/components/Tooltip';
-import Icons from 'src/components/Icons';
 import CopyToClipboard from '../../components/CopyToClipboard';
 import { IconTooltip } from '../../components/IconTooltip';
-import ColumnElement from './ColumnElement';
+import ColumnElement, { ColumnKeyTypeType } from './ColumnElement';
 import ShowSQL from './ShowSQL';
 import ModalTrigger from '../../components/ModalTrigger';
 import Loading from '../../components/Loading';
 
-const propTypes = {
-  table: PropTypes.object,
-  actions: PropTypes.object,
-};
+// const propTypes = {
+//   table: PropTypes.object,
+//   actions: PropTypes.object,
+// };
 
-const defaultProps = {
-  actions: {},
-  table: null,
-};
+// const defaultProps = {
+//   actions: {},
+//   table: null,
+// };
+
+interface tableType {
+  name: string;
+  partitions?: {
+    partitionQuery: string;
+    latest: object[];
+  };
+  indexes: object[];
+  selectStar: string;
+  view: string;
+  isMetadataLoading: boolean;
+  isExtraMetadataLoading: boolean;
+  columns: Array<columnType>;
+}
+
+interface columnType {
+  name: string;
+  keys?: { type: ColumnKeyTypeType }[];
+  type: string;
+}
+
+interface TableElementProps {
+  table: tableType;
+  actions: {
+    removeDataPreview(table: tableType): void;
+    removeTable(table: tableType): void;
+  };
+  isActive: boolean;
+  key: string | number;
+}
 
 const StyledSpan = styled.span`
   color: ${({ theme }) => theme.colors.primary.dark1};
@@ -53,16 +82,16 @@ const StyledSpan = styled.span`
 
 const Fade = styled.div`
   transition: all ${({ theme }) => theme.transitionTiming}s;
-  opacity: ${props => (props.hovered ? 1 : 0)};
+  opacity: ${(props: { hovered: boolean }) => (props.hovered ? 1 : 0)};
 `;
 
-const TableElement = props => {
+const TableElement = (props: TableElementProps) => {
   const [sortColumns, setSortColumns] = useState(false);
   const [hovered, setHovered] = useState(false);
 
-  const { table, actions, isActive } = props;
+  const { table, actions } = props;
 
-  const setHover = hovered => {
+  const setHover = (hovered: boolean) => {
     debounce(() => setHovered(hovered), 100)();
   };
 
@@ -92,15 +121,15 @@ const TableElement = props => {
           />
         );
       }
-      let latest = Object.entries(table.partitions?.latest || []).map(
+      const latest = Object.entries(table.partitions?.latest || []).map(
         ([key, value]) => `${key}=${value}`,
       );
-      latest = latest.join('/');
+      const latestString: string = latest.join('/');
       header = (
         <Card size="small">
           <div>
             <small>
-              {t('latest partition:')} {latest}
+              {t('latest partition:')} {latestString}
             </small>{' '}
             {partitionClipBoard}
           </div>
@@ -112,7 +141,7 @@ const TableElement = props => {
 
   const renderControls = () => {
     let keyLink;
-    if (table?.indexes.length > 0) {
+    if (table?.indexes?.length) {
       keyLink = (
         <ModalTrigger
           modalTitle={
@@ -137,7 +166,7 @@ const TableElement = props => {
         {keyLink}
         <IconTooltip
           className={
-            `fa fa-sort-${!sortColumns ? 'alpha' : 'numeric'}-asc ` +
+            `fa fa-sort-${sortColumns ? 'numeric' : 'alpha'}-asc ` +
             'pull-left sort-cols m-l-2 pointer'
           }
           onClick={toggleSortColumns}
@@ -216,16 +245,10 @@ const TableElement = props => {
     if (table.columns) {
       cols = table.columns.slice();
       if (sortColumns) {
-        cols.sort((a, b) => {
+        cols.sort((a: columnType, b: columnType) => {
           const colA = a.name.toUpperCase();
           const colB = b.name.toUpperCase();
-          if (colA < colB) {
-            return -1;
-          }
-          if (colA > colB) {
-            return 1;
-          }
-          return 0;
+          return colA < colB ? -1 : colA > colB ? 1 : 0;
         });
       }
     }
@@ -247,41 +270,19 @@ const TableElement = props => {
     return metadata;
   };
 
-  const collapseExpandIcon = () => (
-    <IconTooltip
-      style={{
-        position: 'fixed',
-        right: '16px',
-        left: 'auto',
-        fontSize: '12px',
-        transform: 'rotate(90deg)',
-        display: 'flex',
-        alignItems: 'center',
-      }}
-      aria-label="Collapse"
-      tooltip={t(`${!isActive ? 'Expand' : 'Collapse'} table preview`)}
-    >
-      <Icons.RightOutlined
-        iconSize="s"
-        style={isActive ? { transform: 'rotateY(180deg)' } : null}
-      />
-    </IconTooltip>
-  );
-
   return (
     <Collapse.Panel
       {...props}
       header={renderHeader()}
       className="TableElement"
       forceRender
-      expandIcon={collapseExpandIcon}
     >
       {renderBody()}
     </Collapse.Panel>
   );
 };
 
-TableElement.propTypes = propTypes;
-TableElement.defaultProps = defaultProps;
+// TableElement.propTypes = propTypes;
+// TableElement.defaultProps = defaultProps;
 
 export default TableElement;
