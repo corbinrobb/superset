@@ -53,7 +53,7 @@ interface tableType {
   view: string;
   isMetadataLoading: boolean;
   isExtraMetadataLoading: boolean;
-  columns: Array<columnType>;
+  columns: columnType[];
 }
 
 interface columnType {
@@ -142,6 +142,7 @@ const TableElement = (props: TableElementProps) => {
   const renderControls = () => {
     let keyLink;
     if (table?.indexes?.length) {
+      console.log(table.indexes);
       keyLink = (
         <ModalTrigger
           modalTitle={
@@ -171,9 +172,9 @@ const TableElement = (props: TableElementProps) => {
           }
           onClick={toggleSortColumns}
           tooltip={
-            !sortColumns
-              ? t('Sort columns alphabetically')
-              : t('Original table column order')
+            sortColumns
+              ? t('Original table column order')
+              : t('Sort columns alphabetically')
           }
         />
         {table.selectStar && (

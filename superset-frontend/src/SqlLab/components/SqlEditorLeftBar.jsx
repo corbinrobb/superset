@@ -136,11 +136,9 @@ export default class SqlEditorLeftBar extends React.PureComponent {
     this.props.actions.addTable(this.props.queryEditor, tableName, schemaName);
   }
 
-  renderCollapseExpandIconWithTooltip = ({ isActive }) => (
+  renderExpandIconWithTooltip = ({ isActive }) => (
     <IconTooltip
-      style={{
-        transform: 'rotate(90deg)',
-      }}
+      style={{ transform: 'rotate(90deg)' }}
       aria-label="Collapse"
       tooltip={t(`${isActive ? 'Collapse' : 'Expand'} table preview`)}
     >
@@ -201,7 +199,7 @@ export default class SqlEditorLeftBar extends React.PureComponent {
               expandIconPosition="right"
               ghost
               onChange={this.onToggleTable}
-              expandIcon={this.renderCollapseExpandIconWithTooltip}
+              expandIcon={this.renderExpandIconWithTooltip}
             >
               {this.props.tables.map(table => (
                 <TableElement
