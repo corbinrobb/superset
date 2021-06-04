@@ -17,7 +17,6 @@
  * under the License.
  */
 import React, { useState } from 'react';
-// import PropTypes from 'prop-types';
 import Collapse from 'src/components/Collapse';
 import Card from 'src/components/Card';
 import ButtonGroup from 'src/components/ButtonGroup';
@@ -32,15 +31,14 @@ import ShowSQL from './ShowSQL';
 import ModalTrigger from '../../components/ModalTrigger';
 import Loading from '../../components/Loading';
 
-// const propTypes = {
-//   table: PropTypes.object,
-//   actions: PropTypes.object,
-// };
-
+// I don't think this makes sense to have
+// Shouldn't be rendering component if table and actions are passed in
+// ----------------------
 // const defaultProps = {
 //   actions: {},
 //   table: null,
 // };
+// ----------------------
 
 interface tableType {
   name: string;
@@ -142,7 +140,6 @@ const TableElement = (props: TableElementProps) => {
   const renderControls = () => {
     let keyLink;
     if (table?.indexes?.length) {
-      console.log(table.indexes);
       keyLink = (
         <ModalTrigger
           modalTitle={
@@ -283,7 +280,6 @@ const TableElement = (props: TableElementProps) => {
   );
 };
 
-// TableElement.propTypes = propTypes;
 // TableElement.defaultProps = defaultProps;
 
 export default TableElement;
