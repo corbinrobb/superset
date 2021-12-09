@@ -36,7 +36,7 @@ import AntdSelect, {
 } from 'antd/lib/select';
 import { DownOutlined, SearchOutlined } from '@ant-design/icons';
 import debounce from 'lodash/debounce';
-import { isEqual } from 'lodash';
+// import { isEqual } from 'lodash';
 import { Spin } from 'antd';
 import Icons from 'src/components/Icons';
 import { getClientErrorObject } from 'src/utils/getClientErrorObject';
@@ -157,7 +157,7 @@ export interface SelectProps extends PickedSelectProps {
    * Works in async mode only (See the options property).
    */
   onError?: (error: string) => void;
-  sortComparator?: (a: AntdLabeledValue, b: AntdLabeledValue) => number;
+  // sortComparator?: (a: AntdLabeledValue, b: AntdLabeledValue) => number;
 }
 
 const StyledContainer = styled.div`
@@ -223,7 +223,7 @@ const StyledLoadingText = styled.div`
 const MAX_TAG_COUNT = 4;
 const TOKEN_SEPARATORS = [',', '\n', '\t', ';'];
 const DEBOUNCE_TIMEOUT = 500;
-const DEFAULT_PAGE_SIZE = 100;
+const DEFAULT_PAGE_SIZE = 10;
 const EMPTY_OPTIONS: OptionsType = [];
 
 const Error = ({ error }: { error: string }) => (
@@ -232,27 +232,27 @@ const Error = ({ error }: { error: string }) => (
   </StyledError>
 );
 
-const defaultSortComparator = (a: AntdLabeledValue, b: AntdLabeledValue) => {
-  if (typeof a.label === 'string' && typeof b.label === 'string') {
-    return a.label.localeCompare(b.label);
-  }
-  if (typeof a.value === 'string' && typeof b.value === 'string') {
-    return a.value.localeCompare(b.value);
-  }
-  return (a.value as number) - (b.value as number);
-};
+// const defaultSortComparator = (a: AntdLabeledValue, b: AntdLabeledValue) => {
+//   if (typeof a.label === 'string' && typeof b.label === 'string') {
+//     return a.label.localeCompare(b.label);
+//   }
+//   if (typeof a.value === 'string' && typeof b.value === 'string') {
+//     return a.value.localeCompare(b.value);
+//   }
+//   return (a.value as number) - (b.value as number);
+// };
 
 /**
  * It creates a comparator to check for a specific property.
  * Can be used with string and number property values.
  * */
-export const propertyComparator =
-  (property: string) => (a: AntdLabeledValue, b: AntdLabeledValue) => {
-    if (typeof a[property] === 'string' && typeof b[property] === 'string') {
-      return a[property].localeCompare(b[property]);
-    }
-    return (a[property] as number) - (b[property] as number);
-  };
+// export const propertyComparator =
+//   (property: string) => (a: AntdLabeledValue, b: AntdLabeledValue) => {
+//     if (typeof a[property] === 'string' && typeof b[property] === 'string') {
+//       return a[property].localeCompare(b[property]);
+//     }
+//     return (a[property] as number) - (b[property] as number);
+//   };
 
 /**
  * This component is a customized version of the Antdesign 4.X Select component
@@ -289,7 +289,7 @@ const Select = ({
   pageSize = DEFAULT_PAGE_SIZE,
   placeholder = t('Select ...'),
   showSearch = true,
-  sortComparator = defaultSortComparator,
+  // sortComparator = defaultSortComparator,
   value,
   ...props
 }: SelectProps) => {
@@ -319,84 +319,137 @@ const Select = ({
     : allowNewOptions
     ? 'tags'
     : 'multiple';
+  const [displayedOptions, setDisplayedOptions] = useState(EMPTY_OPTIONS);
+  const [newOptions, setNewOptions] = useState(EMPTY_OPTIONS);
+
+  const sortedAtTop = useCallback(
+    (selected: AntdSelectValue | undefined, allOptions: OptionsType) => {
+      const top: OptionsType = [];
+      const selectedArray = Array.isArray(selected)
+        ? [...selected]
+        : typeof selected === 'object' && selected?.value
+        ? [selected.value]
+        : [selected];
+      selectedArray.forEach(sel => {
+        if (typeof sel === 'string' && !hasOption(sel, allOptions)) {
+          const newOption = { value: sel, label: sel };
+          top.push(newOption);
+        }
+      });
+      const bottom = allOptions.filter(opt => {
+        if (opt && selectedArray.includes(opt.value)) {
+          top.push(opt);
+          return false;
+        }
+        return true;
+      });
+
+      return top.concat(bottom);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const selectedSortedAtTop = sortedAtTop(selectValue, selectOptions);
+    if (isSingleMode || (!isSingleMode && !isDropdownVisible))
+      setDisplayedOptions(selectedSortedAtTop);
+  }, [
+    isDropdownVisible,
+    isSingleMode,
+    selectOptions,
+    selectValue,
+    sortedAtTop,
+  ]);
 
   // TODO: Don't assume that isAsync is always labelInValue
-  const handleTopOptions = useCallback(
-    (selectedValue: AntdSelectValue | undefined) => {
-      // bringing selected options to the top of the list
-      if (selectedValue !== undefined && selectedValue !== null) {
-        const isLabeledValue = isAsync || labelInValue;
-        const topOptions: OptionsType = [];
-        const otherOptions: OptionsType = [];
+  // const handleTopOptions = useCallback(
+  //   (selectedValue: AntdSelectValue | undefined) => {
+  //     // bringing selected options to the top of the list
+  //     if (selectedValue !== undefined && selectedValue !== null) {
+  //       const isLabeledValue = isAsync || labelInValue;
+  //       const topOptions: OptionsType = [];
+  //       const otherOptions: OptionsType = [];
 
-        selectOptions.forEach(opt => {
-          let found = false;
-          if (Array.isArray(selectedValue)) {
-            if (isLabeledValue) {
-              found =
-                (selectedValue as AntdLabeledValue[]).find(
-                  element => element.value === opt.value,
-                ) !== undefined;
-            } else {
-              found = selectedValue.includes(opt.value);
-            }
-          } else {
-            found = isLabeledValue
-              ? (selectedValue as AntdLabeledValue).value === opt.value
-              : selectedValue === opt.value;
-          }
+  //       selectOptions.forEach(opt => {
+  //         let found = false;
+  //         if (Array.isArray(selectedValue)) {
+  //           if (isLabeledValue) {
+  //             found =
+  //               (selectedValue as AntdLabeledValue[]).find(
+  //                 element => element.value === opt.value,
+  //               ) !== undefined;
+  //           } else {
+  //             found = selectedValue.includes(opt.value);
+  //           }
+  //         } else {
+  //           found = isLabeledValue
+  //             ? (selectedValue as AntdLabeledValue).value === opt.value
+  //             : selectedValue === opt.value;
+  //         }
 
-          if (found) {
-            topOptions.push(opt);
-          } else {
-            otherOptions.push(opt);
-          }
-        });
+  //         if (found) {
+  //           topOptions.push(opt);
+  //         } else {
+  //           otherOptions.push(opt);
+  //         }
+  //       });
 
-        // fallback for custom options in tags mode as they
-        // do not appear in the selectOptions state
-        if (!isSingleMode && Array.isArray(selectedValue)) {
-          selectedValue.forEach((val: string | number | AntdLabeledValue) => {
-            if (
-              !topOptions.find(
-                tOpt =>
-                  tOpt.value ===
-                  (isLabeledValue ? (val as AntdLabeledValue)?.value : val),
-              )
-            ) {
-              if (isLabeledValue) {
-                const labelValue = val as AntdLabeledValue;
-                topOptions.push({
-                  label: labelValue.label,
-                  value: labelValue.value,
-                });
-              } else {
-                const value = val as string | number;
-                topOptions.push({ label: String(value), value });
-              }
-            }
-          });
-        }
-        const sortedOptions = [
-          ...topOptions.sort(sortComparator),
-          ...otherOptions.sort(sortComparator),
-        ];
-        if (!isEqual(sortedOptions, selectOptions)) {
-          setSelectOptions(sortedOptions);
-        }
-      } else {
-        const sortedOptions = [...selectOptions].sort(sortComparator);
-        if (!isEqual(sortedOptions, selectOptions)) {
-          setSelectOptions(sortedOptions);
-        }
-      }
-    },
-    [isAsync, isSingleMode, labelInValue, selectOptions, sortComparator],
-  );
+  //       // fallback for custom options in tags mode as they
+  //       // do not appear in the selectOptions state
+  //       if (!isSingleMode && Array.isArray(selectedValue)) {
+  //         selectedValue.forEach((val: string | number | AntdLabeledValue) => {
+  //           if (
+  //             !topOptions.find(
+  //               tOpt =>
+  //                 tOpt.value ===
+  //                 (isLabeledValue ? (val as AntdLabeledValue)?.value : val),
+  //             )
+  //           ) {
+  //             if (isLabeledValue) {
+  //               const labelValue = val as AntdLabeledValue;
+  //               topOptions.push({
+  //                 label: labelValue.label,
+  //                 value: labelValue.value,
+  //               });
+  //             } else {
+  //               const value = val as string | number;
+  //               topOptions.push({ label: String(value), value });
+  //             }
+  //           }
+  //         });
+  //       }
+  //       const sortedOptions = [
+  //         ...topOptions.sort(sortComparator),
+  //         ...otherOptions.sort(sortComparator),
+  //       ];
+  //       if (!isEqual(sortedOptions, selectOptions)) {
+  //         setSelectOptions(sortedOptions);
+  //       }
+  //     } else {
+  //       const sortedOptions = [...selectOptions].sort(sortComparator);
+  //       if (!isEqual(sortedOptions, selectOptions)) {
+  //         setSelectOptions(sortedOptions);
+  //       }
+  //     }
+  //   },
+  //   [isAsync, isSingleMode, labelInValue, selectOptions, sortComparator],
+  // );
 
   const handleOnSelect = (
     selectedValue: string | number | AntdLabeledValue,
   ) => {
+    if (
+      typeof selectValue === 'string' &&
+      !!hasOption(selectValue, newOptions) &&
+      selectValue !== selectedValue
+    ) {
+      setSelectOptions(prevOptions =>
+        prevOptions.filter(opt => opt.value !== selectValue),
+      );
+      setNewOptions(prevOptions =>
+        prevOptions.filter(opt => opt.value !== selectValue),
+      );
+    }
     if (isSingleMode) {
       setSelectValue(selectedValue);
     } else {
@@ -469,14 +522,22 @@ const Select = ({
             ),
             ...data,
           ];
-          mergedData.sort(sortComparator);
+          // mergedData.sort(sortComparator);
           return mergedData;
         });
       }
       return mergedData;
     },
-    [sortComparator],
+    [
+      // sortComparator
+    ],
   );
+
+  const handleSearchData = useCallback((data: OptionsType) => {
+    if (data && Array.isArray(data) && data.length) {
+      setDisplayedOptions(data);
+    }
+  }, []);
 
   const handlePaginatedFetch = useMemo(
     () => (value: string, page: number, pageSize: number) => {
@@ -497,16 +558,30 @@ const Select = ({
       const fetchOptions = options as OptionsPagePromise;
       fetchOptions(value, page, pageSize)
         .then(({ data, totalCount }: OptionsTypePage) => {
-          const mergedData = handleData(data);
-          fetchedQueries.current.set(key, totalCount);
-          setTotalCount(totalCount);
-          if (
-            !fetchOnlyOnSearch &&
-            value === '' &&
-            mergedData.length >= totalCount
-          ) {
-            setAllValuesLoaded(true);
+          if (value) {
+            handleSearchData(data);
+          } else {
+            const mergedData = handleData(data);
+            fetchedQueries.current.set(key, totalCount);
+            setTotalCount(totalCount);
+            if (
+              !fetchOnlyOnSearch &&
+              value === '' &&
+              mergedData.length >= totalCount
+            ) {
+              setAllValuesLoaded(true);
+            }
           }
+          // const mergedData = handleData(data);
+          // fetchedQueries.current.set(key, totalCount);
+          // setTotalCount(totalCount);
+          // if (
+          //   !fetchOnlyOnSearch &&
+          //   value === '' &&
+          //   mergedData.length >= totalCount
+          // ) {
+          //   setAllValuesLoaded(true);
+          // }
         })
         .catch(internalOnError)
         .finally(() => {
@@ -514,7 +589,14 @@ const Select = ({
           setIsTyping(false);
         });
     },
-    [allValuesLoaded, fetchOnlyOnSearch, handleData, internalOnError, options],
+    [
+      allValuesLoaded,
+      fetchOnlyOnSearch,
+      handleData,
+      handleSearchData,
+      internalOnError,
+      options,
+    ],
   );
 
   const handleOnSearch = useMemo(
@@ -535,11 +617,13 @@ const Select = ({
             : [...selectOptions.filter(opt => opt.value !== searchedValue)];
 
           setSelectOptions(newOptions);
+          if (newOption) setNewOptions(prev => [...prev, newOption]);
         }
 
         if (!searchValue || searchValue === searchedValue) {
           setIsTyping(false);
         }
+        if (!searchValue) setDisplayedOptions(selectOptions);
         setSearchedValue(searchValue);
       }, DEBOUNCE_TIMEOUT),
     [allowNewOptions, isSingleMode, searchedValue, selectOptions],
@@ -588,9 +672,10 @@ const Select = ({
 
     // multiple or tags mode keep the dropdown visible while selecting options
     // this waits for the dropdown to be opened before sorting the top options
-    if (!isSingleMode && isDropdownVisible) {
-      handleTopOptions(selectValue);
-    }
+    // if (!isSingleMode && !isDropdownVisible) {
+    // handleTopOptions(selectValue);
+    // setDisplayedOptions(sortedAtTop(selectValue, selectOptions));
+    // }
   };
 
   const dropdownRender = (
@@ -640,32 +725,32 @@ const Select = ({
     setSelectValue(value);
   }, [value]);
 
-  useEffect(() => {
-    if (selectValue) {
-      const array = Array.isArray(selectValue)
-        ? (selectValue as AntdLabeledValue[])
-        : [selectValue as AntdLabeledValue | string | number];
-      const options: AntdLabeledValue[] = [];
-      const isLabeledValue = isAsync || labelInValue;
-      array.forEach(element => {
-        const found = selectOptions.find((option: { value: string | number }) =>
-          isLabeledValue
-            ? option.value === (element as AntdLabeledValue).value
-            : option.value === element,
-        );
-        if (!found) {
-          options.push(
-            isLabeledValue
-              ? (element as AntdLabeledValue)
-              : ({ value: element, label: element } as AntdLabeledValue),
-          );
-        }
-      });
-      if (options.length > 0) {
-        setSelectOptions([...options, ...selectOptions]);
-      }
-    }
-  }, [labelInValue, isAsync, selectOptions, selectValue]);
+  // useEffect(() => {
+  //   if (selectValue) {
+  //     const array = Array.isArray(selectValue)
+  //       ? (selectValue as AntdLabeledValue[])
+  //       : [selectValue as AntdLabeledValue | string | number];
+  //     const options: AntdLabeledValue[] = [];
+  //     const isLabeledValue = isAsync || labelInValue;
+  //     array.forEach(element => {
+  //       const found = selectOptions.find((option: { value: string | number }) =>
+  //         isLabeledValue
+  //           ? option.value === (element as AntdLabeledValue).value
+  //           : option.value === element,
+  //       );
+  //       if (!found) {
+  //         options.push(
+  //           isLabeledValue
+  //             ? (element as AntdLabeledValue)
+  //             : ({ value: element, label: element } as AntdLabeledValue),
+  //         );
+  //       }
+  //     });
+  //     if (options.length > 0) {
+  //       setSelectOptions([...options, ...selectOptions]);
+  //     }
+  //   }
+  // }, [labelInValue, isAsync, selectOptions, selectValue]);
 
   // Stop the invocation of the debounced function after unmounting
   useEffect(() => () => handleOnSearch.cancel(), [handleOnSearch]);
@@ -686,11 +771,11 @@ const Select = ({
     fetchOnlyOnSearch,
   ]);
 
-  useEffect(() => {
-    if (isSingleMode) {
-      handleTopOptions(selectValue);
-    }
-  }, [handleTopOptions, isSingleMode, selectValue]);
+  // useEffect(() => {
+  //   if (isSingleMode) {
+  //     handleTopOptions(selectValue);
+  //   }
+  // }, [handleTopOptions, isSingleMode, selectValue]);
 
   useEffect(() => {
     if (loading !== undefined && loading !== isLoading) {
@@ -724,7 +809,7 @@ const Select = ({
         onSelect={handleOnSelect}
         onClear={handleClear}
         onChange={onChange}
-        options={shouldUseChildrenOptions ? undefined : selectOptions}
+        options={shouldUseChildrenOptions ? undefined : displayedOptions}
         placeholder={placeholder}
         showSearch={shouldShowSearch}
         showArrow
@@ -741,7 +826,7 @@ const Select = ({
         {...props}
       >
         {shouldUseChildrenOptions &&
-          selectOptions.map(opt => {
+          displayedOptions.map(opt => {
             const isOptObject = typeof opt === 'object';
             const label = isOptObject ? opt?.label || opt.value : opt;
             const value = isOptObject ? opt.value : opt;

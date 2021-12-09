@@ -124,7 +124,9 @@ const groupByControl: SharedControlConfig<'SelectControl', ColumnMeta> = {
       if (includeTime) {
         options.unshift(TIME_COLUMN_OPTION);
       }
-      newState.options = options;
+      newState.options = options.sort((a, b) =>
+        a.column_name.localeCompare(b.column_name),
+      );
     }
     return newState;
   },
@@ -137,7 +139,11 @@ const metrics: SharedControlConfig<'MetricsControl'> = {
   label: t('Metrics'),
   validators: [validateNonEmpty],
   mapStateToProps: ({ datasource }) => ({
-    columns: datasource ? datasource.columns : [],
+    columns: datasource
+      ? datasource.columns.sort((a, b) =>
+          a.column_name.localeCompare(b.column_name),
+        )
+      : [],
     savedMetrics: datasource ? datasource.metrics : [],
     datasource,
     datasourceType: datasource?.type,

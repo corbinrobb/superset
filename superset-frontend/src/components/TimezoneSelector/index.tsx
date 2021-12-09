@@ -83,7 +83,11 @@ ALL_ZONES.forEach(zone => {
   }
 });
 
-const TIMEZONE_OPTIONS = TIMEZONES.map(zone => ({
+const TIMEZONE_OPTIONS = TIMEZONES.sort(
+  (a, b) =>
+    moment.tz(currentDate, a.name).utcOffset() -
+    moment.tz(currentDate, b.name).utcOffset(),
+).map(zone => ({
   label: `GMT ${moment
     .tz(currentDate, zone.name)
     .format('Z')} (${getTimezoneName(zone.name)})`,
@@ -115,6 +119,8 @@ const TimezoneSelector = ({ onTimezoneChange, timezone }: TimezoneProps) => {
     }
   }, [timezone, updateTimezone]);
 
+  // console.log('timezone', timezone);
+
   return (
     <Select
       ariaLabel={t('Timezone selector')}
@@ -122,13 +128,13 @@ const TimezoneSelector = ({ onTimezoneChange, timezone }: TimezoneProps) => {
       onChange={onTimezoneChange}
       value={timezone || DEFAULT_TIMEZONE.value}
       options={TIMEZONE_OPTIONS}
-      sortComparator={(
-        a: typeof TIMEZONE_OPTIONS[number],
-        b: typeof TIMEZONE_OPTIONS[number],
-      ) =>
-        moment.tz(currentDate, a.timezoneName).utcOffset() -
-        moment.tz(currentDate, b.timezoneName).utcOffset()
-      }
+      //   sortComparator={(
+      //     a: typeof TIMEZONE_OPTIONS[number],
+      //     b: typeof TIMEZONE_OPTIONS[number],
+      //   ) =>
+      //     moment.tz(currentDate, a.timezoneName).utcOffset() -
+      //     moment.tz(currentDate, b.timezoneName).utcOffset()
+      //   }
     />
   );
 };

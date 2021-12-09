@@ -109,7 +109,10 @@ const all_columns: typeof sharedControls.groupby = {
   valueRenderer: c => <ColumnOption column={c} />,
   valueKey: 'column_name',
   mapStateToProps: ({ datasource, controls }, controlState) => ({
-    options: datasource?.columns || [],
+    options:
+      datasource?.columns.sort((a, b) =>
+        a.column_name.localeCompare(b.column_name),
+      ) || [],
     queryMode: getQueryMode(controls),
     externalValidationErrors:
       isRawMode({ controls }) && ensureIsArray(controlState.value).length === 0

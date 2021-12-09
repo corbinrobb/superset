@@ -209,7 +209,11 @@ const TableSelector: FunctionComponent<TableSelectorProps> = ({
           if (onTablesLoad) {
             onTablesLoad(json.options);
           }
-          setTableOptions(options);
+          setTableOptions(
+            options.sort((a: { text: string }, b: { text: string }) =>
+              a.text.localeCompare(b.text),
+            ),
+          );
           setCurrentTable(currentTable);
           setLoadingTables(false);
         })

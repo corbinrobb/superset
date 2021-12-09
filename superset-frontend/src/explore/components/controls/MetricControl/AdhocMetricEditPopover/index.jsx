@@ -401,12 +401,14 @@ export default class AdhocMetricEditPopover extends React.PureComponent {
           >
             <FormItem label={t('column')}>
               <Select
-                options={columns.map(column => ({
-                  value: column.column_name,
-                  label: column.verbose_name || column.column_name,
-                  key: column.id,
-                  customLabel: this.renderColumnOption(column),
-                }))}
+                options={columns
+                  .sort((a, b) => a.column_name.localeCompare(b.column_name))
+                  .map(column => ({
+                    value: column.column_name,
+                    label: column.verbose_name || column.column_name,
+                    key: column.id,
+                    customLabel: this.renderColumnOption(column),
+                  }))}
                 {...columnSelectProps}
               />
             </FormItem>

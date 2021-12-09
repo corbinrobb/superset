@@ -129,7 +129,7 @@ const operatorField = (
     <Select
       ariaLabel={t('Operator')}
       options={operatorOptions}
-      sortComparator={propertyComparator('order')}
+      // sortComparator={propertyComparator('order')}
     />
   </FormItem>
 );

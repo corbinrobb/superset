@@ -38,7 +38,7 @@ import { Switch } from 'src/components/Switch';
 import Modal from 'src/components/Modal';
 import TimezoneSelector from 'src/components/TimezoneSelector';
 import { Radio } from 'src/components/Radio';
-import Select, { propertyComparator } from 'src/components/Select/Select';
+import Select from 'src/components/Select/Select';
 import { FeatureFlag, isFeatureEnabled } from 'src/featureFlags';
 import withToasts from 'src/components/MessageToasts/withToasts';
 import Owner from 'src/types/Owner';
@@ -587,12 +587,14 @@ const AlertReportModal: FunctionComponent<AlertReportModalProps> = ({
         return SupersetClient.get({
           endpoint: `/api/v1/report/related/owners?q=${query}`,
         }).then(response => ({
-          data: response.json.result.map(
-            (item: { value: number; text: string }) => ({
+          data: response.json.result
+            .map((item: { value: number; text: string }) => ({
               value: item.value,
               label: item.text,
-            }),
-          ),
+            }))
+            .sort((a: { label: string }, b: { label: string }) =>
+              a.label.localeCompare(b.label),
+            ),
           totalCount: response.json.count,
         }));
       },
@@ -640,12 +642,14 @@ const AlertReportModal: FunctionComponent<AlertReportModalProps> = ({
         return SupersetClient.get({
           endpoint: `/api/v1/report/related/database?q=${query}`,
         }).then(response => {
-          const list = response.json.result.map(
-            (item: { value: number; text: string }) => ({
+          const list = response.json.result
+            .map((item: { value: number; text: string }) => ({
               value: item.value,
               label: item.text,
-            }),
-          );
+            }))
+            .sort((a: { label: string }, b: { label: string }) =>
+              a.label.localeCompare(b.label),
+            );
           setSourceOptions(list);
           return { data: list, totalCount: response.json.count };
         });
@@ -673,12 +677,14 @@ const AlertReportModal: FunctionComponent<AlertReportModalProps> = ({
         return SupersetClient.get({
           endpoint: `/api/v1/report/related/dashboard?q=${query}`,
         }).then(response => {
-          const list = response.json.result.map(
-            (item: { value: number; text: string }) => ({
+          const list = response.json.result
+            .map((item: { value: number; text: string }) => ({
               value: item.value,
               label: item.text,
-            }),
-          );
+            }))
+            .sort((a: { label: string }, b: { label: string }) =>
+              a.label.localeCompare(b.label),
+            );
           setDashboardOptions(list);
           return { data: list, totalCount: response.json.count };
         });
@@ -747,12 +753,14 @@ const AlertReportModal: FunctionComponent<AlertReportModalProps> = ({
         return SupersetClient.get({
           endpoint: `/api/v1/report/related/chart?q=${query}`,
         }).then(response => {
-          const list = response.json.result.map(
-            (item: { value: number; text: string }) => ({
+          const list = response.json.result
+            .map((item: { value: number; text: string }) => ({
               value: item.value,
               label: item.text,
-            }),
-          );
+            }))
+            .sort((a: { label: string }, b: { label: string }) =>
+              a.label.localeCompare(b.label),
+            );
 
           setChartOptions(list);
           return { data: list, totalCount: response.json.count };
@@ -1177,7 +1185,7 @@ const AlertReportModal: FunctionComponent<AlertReportModalProps> = ({
                         currentAlert?.validator_config_json?.op || undefined
                       }
                       options={CONDITIONS}
-                      sortComparator={propertyComparator('order')}
+                      // sortComparator={propertyComparator('order')}
                     />
                   </div>
                 </StyledInputContainer>
@@ -1249,7 +1257,7 @@ const AlertReportModal: FunctionComponent<AlertReportModalProps> = ({
                       : DEFAULT_RETENTION
                   }
                   options={RETENTION_OPTIONS}
-                  sortComparator={propertyComparator('value')}
+                  // sortComparator={propertyComparator('value')}
                 />
               </div>
             </StyledInputContainer>

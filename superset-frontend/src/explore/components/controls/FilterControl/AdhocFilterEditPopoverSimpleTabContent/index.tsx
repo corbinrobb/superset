@@ -397,10 +397,17 @@ const AdhocFilterEditPopoverSimpleTabContent: React.FC<Props> = props => {
       {MULTI_OPERATORS.has(operatorId) || suggestions.length > 0 ? (
         <SelectWithLabel
           labelText={labelText}
-          options={suggestions.map((suggestion: string) => ({
-            value: suggestion,
-            label: String(suggestion),
-          }))}
+          options={suggestions
+            .sort((a, b) => {
+              if (typeof a === 'string' && typeof b === 'string') {
+                return a.localeCompare(b);
+              }
+              return a - b;
+            })
+            .map((suggestion: string) => ({
+              value: suggestion,
+              label: String(suggestion),
+            }))}
           {...comparatorSelectProps}
         />
       ) : (

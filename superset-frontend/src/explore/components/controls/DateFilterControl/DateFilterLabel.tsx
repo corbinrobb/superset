@@ -295,7 +295,7 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
         options={FRAME_OPTIONS}
         value={frame}
         onChange={onChangeFrame}
-        sortComparator={propertyComparator('order')}
+        // sortComparator={propertyComparator('order')}
       />
       {frame !== 'No filter' && <Divider />}
       {frame === 'Common' && (
